@@ -1057,6 +1057,7 @@
       const ADMIN_API_URL =
         "https://script.google.com/macros/s/AKfycbw1OJTFb11HhF7fLauhl5dbzFUHwGyes5fLLajzZqg0xshtlEpx0PhwQAAoyc1MGaC4/exec";
       const TOKEN_KEY = "bobim_auth_token_v1";
+      const REQUIRED_SERVER_VERSION = "RBAC-3.3-SYNC-STABLE";
       const AUTH_ERROR_CODES = new Set([
         "AUTH_REQUIRED",
         "SESSION_INVALID",
@@ -1069,6 +1070,14 @@
         tasks: safeJsonParse(localStorage.getItem(TASK_CACHE_KEY), []),
         token: localStorage.getItem(TOKEN_KEY) || "",
         user: null,
+        capabilities: {
+          canViewTasks: false,
+          canManageTasks: false,
+          canManageAccounts: false,
+          canViewAudit: false,
+          canResetOtherPasswords: false,
+        },
+        serverVersion: "",
         users: [],
         audit: [],
         syncTimer: null,
@@ -1188,56 +1197,55 @@
       }
 
       function isAdmin() {
-        return Boolean(state.capabilities?.canManageAccounts);
+        return Boolean(state.capabilities.canManageAccounts);
       }
 
       function isOperator() {
         return (
-          state.user?.role === "operator" &&
-          Boolean(state.capabilities?.canManageTasks) &&
-          !Boolean(state.capabilities?.canManageAccounts)
+          state.user &&
+          state.user.role === "operator" &&
+          Boolean(state.capabilities.canManageTasks) &&
+          !Boolean(state.capabilities.canManageAccounts)
         );
       }
 
       function canManageTasks() {
-        return Boolean(state.capabilities?.canManageTasks);
+        return Boolean(state.capabilities.canManageTasks);
       }
 
       function applyServerIdentity(result) {
-        if (result?.user) state.user = result.user;
-
-        if (result?.capabilities) {
-          state.capabilities = {
-            ...state.capabilities,
-            ...result.capabilities,
-          };
-        } else if (state.user) {
-          // Fallback only for displaying a clear deployment warning.
-          const role = String(state.user.role || "viewer").toLowerCase();
-          state.capabilities = {
-            canViewTasks: true,
-            canManageTasks: role === "admin",
-            canManageAccounts: role === "admin",
-            canViewAudit: role === "admin",
-            canResetOtherPasswords: role === "admin",
-          };
+        if (result && result.user) {
+          state.user = result.user;
         }
 
-        state.serverVersion = String(result?.serverVersion || "");
+        if (result && result.capabilities) {
+          state.capabilities = Object.assign(
+            {},
+            state.capabilities,
+            result.capabilities
+          );
+        }
+
+        state.serverVersion = String(
+          (result && result.serverVersion) || ""
+        );
       }
 
-      function ensureBackendVersion(result) {
-        const version = String(result?.serverVersion || "");
-        const role = String(result?.user?.role || state.user?.role || "");
+      function ensureServerCompatibility(result) {
+        const actual = String(
+          (result && result.serverVersion) || ""
+        );
 
-        if (role === "operator" && version !== REQUIRED_SERVER_VERSION) {
-          throw Object.assign(
-            new Error(
-              "Tài khoản đã được gán vai trò Điều hành nhưng Apps Script đang chạy phiên bản cũ. " +
-                "Hãy thay Code.gs bằng Code_RBAC_PRO_v4_OPERATOR_FIXED.gs và cập nhật deployment hiện tại bằng New version."
-            ),
-            { code: "BACKEND_VERSION_MISMATCH" },
+        if (actual !== REQUIRED_SERVER_VERSION) {
+          const error = new Error(
+            "HTML và Apps Script chưa đồng bộ phiên bản. " +
+              "HTML yêu cầu " + REQUIRED_SERVER_VERSION +
+              " nhưng Web App đang trả về " +
+              (actual || "không có mã phiên bản") +
+              ". Hãy cập nhật đúng Code.gs và deployment hiện tại."
           );
+          error.code = "BACKEND_VERSION_MISMATCH";
+          throw error;
         }
       }
 
@@ -1292,7 +1300,7 @@
         try {
           result = JSON.parse(raw);
         } catch (_) {
-          throw new Error("Web App không trả về JSON hợp lệ. Hãy triển khai lại Code_RBAC_PRO_v4_OPERATOR_FIXED.gs bằng phiên bản mới.");
+          throw new Error("Web App không trả về JSON hợp lệ. Hãy triển khai Code_RBAC_PRO_v6_SYNC_STABLE.gs bằng New version.");
         }
 
         if (!result || result.ok !== true) {
@@ -1339,6 +1347,7 @@
       }
 
       function enterDashboard(result) {
+        ensureServerCompatibility(result);
         applyServerIdentity(result);
         el.authGate.classList.add("hidden");
         el.dashboardApp.classList.remove("hidden");
@@ -1384,11 +1393,12 @@
           state.user?.fullName || state.user?.email || "Người dùng";
 
         if (admin) {
-          el.userRole.textContent = "Quản trị viên · toàn quyền";
+          el.userRole.textContent =
+            "Quản trị viên · toàn quyền · " + state.serverVersion;
         } else if (isOperator()) {
           el.userRole.textContent =
-            "Điều hành · xử lý công việc, không quản lý tài khoản" +
-            (state.serverVersion ? " · " + state.serverVersion : "");
+            "Điều hành · xử lý công việc, không quản lý tài khoản · " +
+            state.serverVersion;
         } else {
           el.userRole.textContent = "Người dùng · chỉ xem";
         }
@@ -1409,7 +1419,7 @@
 
         try {
           const result = await apiRequest("session", {}, { handleAuth: false });
-          enterDashboard(result.user);
+          enterDashboard(result);
           await loadRemote(true);
         } catch (error) {
           clearSession(false);
@@ -1431,14 +1441,10 @@
           state.token = result.token;
           localStorage.setItem(TOKEN_KEY, result.token);
           el.loginPassword.value = "";
-          enterDashboard(result.user);
+          enterDashboard(result);
           await loadRemote(true);
         } catch (error) {
-          if (error.code === "BACKEND_VERSION_MISMATCH") {
-            showMessage(el.loginMessage, error.message, "error");
-          } else {
-            showMessage(el.loginMessage, error.message, "error");
-          }
+          showMessage(el.loginMessage, error.message, "error");
         } finally {
           setBusy(el.loginButton, false);
         }
@@ -1532,7 +1538,7 @@
         el.syncText.textContent = "Đang đồng bộ...";
         try {
           const result = await apiRequest("list");
-          ensureBackendVersion(result);
+          ensureServerCompatibility(result);
           applyServerIdentity(result);
           updatePermissionUi();
 
@@ -1597,13 +1603,7 @@
 
       async function saveTask(event) {
         event.preventDefault();
-        if (!canManageTasks()) {
-          alert(
-            "Máy chủ chưa xác nhận quyền Điều hành cho tài khoản này. " +
-              "Hãy đồng bộ lại hoặc kiểm tra phiên bản Apps Script."
-          );
-          return;
-        }
+        if (!canManageTasks()) return;
 
         const task = {
           id: String(el.taskId.value || Date.now()),
