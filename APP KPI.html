@@ -1,0 +1,2127 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Trung tâm điều hành tiến độ · Phân quyền</title>
+    <style>
+      :root {
+        --bg: #06101d;
+        --panel: #0b1c2c;
+        --panel-2: #081827;
+        --line: #17364a;
+        --cyan: #20d9e8;
+        --lime: #b9f227;
+        --text: #eaf8ff;
+        --muted: #83a3b5;
+        --red: #ff607c;
+        --amber: #ffc857;
+        --green: #57e389;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-height: 100%;
+        background: var(--bg);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 70% 0, #0b2d3b 0, transparent 35%),
+          var(--bg);
+        color: var(--text);
+        font:
+          14px Inter,
+          Segoe UI,
+          Arial,
+          sans-serif;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .app {
+        max-width: 1500px;
+        margin: auto;
+        padding: 22px;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .brand h1 {
+        font-size: 25px;
+        margin: 0 0 5px;
+        letter-spacing: 0.4px;
+      }
+
+      .brand p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .actions {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .btn {
+        border: 1px solid var(--line);
+        background: #0b2233;
+        color: var(--text);
+        padding: 10px 13px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        border-color: #2b6684;
+      }
+
+      .btn.primary {
+        background: linear-gradient(120deg, var(--cyan), #15a7dd);
+        color: #02131b;
+        border: 0;
+        font-weight: 750;
+      }
+
+      .btn.danger {
+        border-color: #6f2940;
+        background: #2b1420;
+        color: #ff9eb0;
+      }
+
+      .btn.success {
+        border-color: #286947;
+        background: #102c21;
+        color: #7ff0aa;
+      }
+
+      .btn.small {
+        padding: 7px 9px;
+        border-radius: 8px;
+        font-size: 12px;
+      }
+
+      .live {
+        color: var(--lime);
+        font-size: 12px;
+      }
+
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 10px var(--lime);
+        margin-right: 6px;
+      }
+
+      .user-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid var(--line);
+        background: #081a29;
+        padding: 7px 10px;
+        border-radius: 999px;
+        max-width: 280px;
+      }
+
+      .user-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        color: #04151c;
+        background: linear-gradient(135deg, var(--lime), var(--cyan));
+      }
+
+      .user-meta {
+        min-width: 0;
+      }
+
+      .user-meta b,
+      .user-meta small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .user-meta small {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .viewer-notice {
+        margin-bottom: 14px;
+        border: 1px solid #24556e;
+        background: linear-gradient(90deg, #0a2637, #0a1d2d);
+        border-radius: 12px;
+        padding: 11px 14px;
+        color: #b6d9e9;
+      }
+
+      .viewer-notice b {
+        color: var(--cyan);
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .card {
+        background: linear-gradient(
+          145deg,
+          rgba(13, 34, 51, 0.96),
+          rgba(7, 24, 38, 0.97)
+        );
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 16px;
+        box-shadow: 0 12px 35px #0004;
+      }
+
+      .kpi .label {
+        color: var(--muted);
+      }
+
+      .kpi strong {
+        font-size: 31px;
+        display: block;
+        margin: 10px 0 6px;
+      }
+
+      .kpi small {
+        color: var(--cyan);
+      }
+
+      .main {
+        grid-template-columns: 1.7fr 0.75fr 0.85fr;
+        margin-top: 14px;
+      }
+
+      .title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .title h2 {
+        font-size: 15px;
+        margin: 0;
+      }
+
+      .bars {
+        height: 220px;
+        display: flex;
+        align-items: flex-end;
+        gap: 11px;
+        border-bottom: 1px solid var(--line);
+        padding: 10px;
+      }
+
+      .baritem {
+        flex: 1;
+        text-align: center;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .bar {
+        background: linear-gradient(var(--lime), var(--cyan));
+        border-radius: 5px 5px 0 0;
+        min-height: 5px;
+        margin-bottom: 7px;
+        box-shadow: 0 0 18px #20d9e833;
+      }
+
+      .ring {
+        width: 155px;
+        height: 155px;
+        margin: 15px auto;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: conic-gradient(
+          var(--lime) 0 var(--p),
+          #143246 var(--p) 100%
+        );
+        position: relative;
+      }
+
+      .ring::after {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border-radius: 50%;
+        background: #0a1d2d;
+      }
+
+      .ring b {
+        z-index: 1;
+        font-size: 28px;
+      }
+
+      .activity {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 210px;
+        overflow: auto;
+      }
+
+      .activity li {
+        border-left: 2px solid var(--cyan);
+        padding: 0 0 15px 12px;
+        color: var(--muted);
+      }
+
+      .activity b {
+        color: var(--text);
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        margin: 15px 0 10px;
+      }
+
+      .field {
+        background: #081a29;
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 9px;
+        padding: 9px 11px;
+        min-width: 150px;
+        outline: none;
+      }
+
+      .field:focus {
+        border-color: var(--cyan);
+        box-shadow: 0 0 0 3px #20d9e81a;
+      }
+
+      .field.search {
+        flex: 1;
+      }
+
+      .tablewrap {
+        overflow: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+      }
+
+      th {
+        text-align: left;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #132d3e;
+        vertical-align: middle;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #153247;
+        color: var(--cyan);
+        font-size: 11px;
+      }
+
+      .pill.done,
+      .pill.active {
+        color: var(--lime);
+      }
+
+      .pill.late,
+      .pill.rejected,
+      .pill.disabled {
+        color: var(--red);
+      }
+
+      .pill.pending {
+        color: var(--amber);
+      }
+
+      .progress {
+        height: 7px;
+        background: #173346;
+        border-radius: 9px;
+        overflow: hidden;
+        width: 105px;
+      }
+
+      .progress i {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, var(--cyan), var(--lime));
+      }
+
+      .readonly-tag {
+        color: var(--muted);
+        font-size: 11px;
+        border: 1px dashed var(--line);
+        border-radius: 20px;
+        padding: 5px 8px;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: #000b;
+        display: none;
+        place-items: center;
+        padding: 20px;
+        z-index: 20;
+        backdrop-filter: blur(6px);
+      }
+
+      .modal.open {
+        display: grid;
+      }
+
+      .dialog {
+        width: min(580px, 100%);
+        max-height: calc(100vh - 40px);
+        overflow: auto;
+        background: #0b1c2c;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 24px 90px #000a;
+      }
+
+      .dialog.large {
+        width: min(1120px, 100%);
+      }
+
+      .dialog h2 {
+        margin-top: 0;
+      }
+
+      .form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .form label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .form input,
+      .form select {
+        width: 100%;
+        margin-top: 6px;
+      }
+
+      .wide {
+        grid-column: 1 / -1;
+      }
+
+      .footer {
+        color: var(--muted);
+        text-align: center;
+        padding: 18px;
+      }
+
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .auth-gate {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        background:
+          radial-gradient(circle at 75% 15%, #0d3b49 0, transparent 30%),
+          radial-gradient(circle at 10% 100%, #123727 0, transparent 28%),
+          #040b12;
+      }
+
+      .auth-shell {
+        width: min(1020px, 100%);
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        overflow: hidden;
+        border: 1px solid #1d4156;
+        border-radius: 24px;
+        box-shadow: 0 35px 120px #000b;
+        background: #071724;
+      }
+
+      .auth-hero {
+        min-height: 590px;
+        padding: 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background:
+          linear-gradient(150deg, #0b3143e8, #071724f4),
+          radial-gradient(circle at 30% 30%, #20d9e833, transparent 40%);
+        border-right: 1px solid #1d4156;
+      }
+
+      .auth-hero h1 {
+        font-size: clamp(32px, 5vw, 52px);
+        line-height: 1.02;
+        margin: 12px 0 18px;
+      }
+
+      .auth-hero p {
+        color: #a9c5d2;
+        max-width: 520px;
+        line-height: 1.7;
+      }
+
+      .auth-mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        color: var(--lime);
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        font-weight: 800;
+        font-size: 12px;
+      }
+
+      .auth-points {
+        display: grid;
+        gap: 12px;
+      }
+
+      .auth-point {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        color: #b9d0db;
+      }
+
+      .auth-point span:first-child {
+        color: var(--cyan);
+        font-weight: 900;
+      }
+
+      .auth-panel {
+        padding: 38px;
+        background: #081827;
+      }
+
+      .auth-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        background: #06131f;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 24px;
+      }
+
+      .auth-tab {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .auth-tab.active {
+        color: #05151d;
+        background: linear-gradient(120deg, var(--cyan), var(--lime));
+      }
+
+      .auth-form {
+        display: grid;
+        gap: 14px;
+      }
+
+      .auth-form label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .auth-form .field {
+        width: 100%;
+        margin-top: 6px;
+        min-height: 44px;
+      }
+
+      .auth-submit {
+        width: 100%;
+        margin-top: 4px;
+        padding: 12px 14px;
+      }
+
+      .auth-message {
+        display: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .auth-message.show {
+        display: block;
+      }
+
+      .auth-message.error {
+        color: #ffc2cd;
+        border: 1px solid #6e2b40;
+        background: #2b1420;
+      }
+
+      .auth-message.success {
+        color: #aef4c6;
+        border: 1px solid #296647;
+        background: #102c21;
+      }
+
+      .connection-box {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+      }
+
+      .connection-box summary {
+        color: var(--cyan);
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .connection-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        margin-top: 11px;
+      }
+
+      .admin-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 14px 0;
+      }
+
+      .mini-card {
+        border: 1px solid var(--line);
+        background: #081827;
+        border-radius: 12px;
+        padding: 12px;
+      }
+
+      .mini-card span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .mini-card strong {
+        display: block;
+        font-size: 24px;
+        margin-top: 5px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin: 22px 0 10px;
+      }
+
+      .section-head h3 {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .audit-list {
+        display: grid;
+        gap: 8px;
+        max-height: 300px;
+        overflow: auto;
+      }
+
+      .audit-item {
+        border: 1px solid #153247;
+        background: #071724;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .audit-item b {
+        color: var(--cyan);
+      }
+
+      .audit-item small {
+        color: var(--muted);
+      }
+
+      @media (max-width: 1020px) {
+        .auth-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .auth-hero {
+          min-height: auto;
+          padding: 30px;
+          border-right: 0;
+          border-bottom: 1px solid #1d4156;
+        }
+
+        .auth-points {
+          display: none;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .kpis,
+        .main {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .main > :first-child {
+          grid-column: 1 / -1;
+        }
+
+        .top {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .admin-summary {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .app {
+          padding: 13px;
+        }
+
+        .kpis,
+        .main {
+          grid-template-columns: 1fr;
+        }
+
+        .main > :first-child {
+          grid-column: auto;
+        }
+
+        .form {
+          grid-template-columns: 1fr;
+        }
+
+        .wide {
+          grid-column: auto;
+        }
+
+        .auth-gate {
+          padding: 10px;
+        }
+
+        .auth-panel,
+        .auth-hero {
+          padding: 22px;
+        }
+
+        .connection-row {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-summary {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-gate" id="authGate">
+      <div class="auth-shell">
+        <section class="auth-hero">
+          <div>
+            <div class="auth-mark">
+              <span class="dot"></span> Hệ thống được bảo vệ
+            </div>
+            <h1>
+              TRUNG TÂM<br />ĐIỀU HÀNH TIẾN ĐỘ <br />
+              ỦY BAN MTTQ PHƯỜNG HÒA BÌNH
+            </h1>
+            <p>
+              Quản trị viên được toàn quyền xử lý dữ liệu. Tài khoản người dùng
+              phải đăng ký trực tiếp vào hệ thống của quản trị viên, chờ phê
+              duyệt và chỉ được truy cập ở chế độ xem.
+            </p>
+          </div>
+          <div class="auth-points">
+            <div class="auth-point">
+              <span>01</span>
+              <div>
+                <b>Không thay đổi bảng Tasks</b><br /><span
+                  >Dữ liệu công việc hiện có được giữ nguyên.</span
+                >
+              </div>
+            </div>
+            <div class="auth-point">
+              <span>02</span>
+              <div>
+                <b>Phân quyền tại máy chủ</b><br /><span
+                  >Ẩn nút trên giao diện không phải lớp bảo vệ duy nhất.</span
+                >
+              </div>
+            </div>
+            <div class="auth-point">
+              <span>03</span>
+              <div>
+                <b>Nhật ký thao tác</b><br /><span
+                  >Ghi nhận đăng nhập, chỉnh sửa, xóa và phê duyệt tài
+                  khoản.</span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="auth-panel">
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="loginTab" type="button">
+              Đăng nhập
+            </button>
+            <button class="auth-tab" id="registerTab" type="button">
+              Đăng ký
+            </button>
+          </div>
+
+          <form class="auth-form" id="loginForm">
+            <label>
+              Email đăng nhập
+              <input
+                class="field"
+                id="loginEmail"
+                type="email"
+                autocomplete="username"
+                required
+              />
+            </label>
+            <label>
+              Mật khẩu
+              <input
+                class="field"
+                id="loginPassword"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+            </label>
+            <div class="auth-message" id="loginMessage"></div>
+            <button
+              class="btn primary auth-submit"
+              id="loginButton"
+              type="submit"
+            >
+              Đăng nhập hệ thống
+            </button>
+          </form>
+
+          <form class="auth-form hidden" id="registerForm">
+            <label>
+              Họ và tên
+              <input
+                class="field"
+                id="registerName"
+                autocomplete="name"
+                required
+              />
+            </label>
+            <label>
+              Email đăng ký
+              <input
+                class="field"
+                id="registerEmail"
+                type="email"
+                autocomplete="email"
+                required
+              />
+            </label>
+            <label>
+              Mật khẩu
+              <input
+                class="field"
+                id="registerPassword"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+            </label>
+            <label>
+              Nhập lại mật khẩu
+              <input
+                class="field"
+                id="registerConfirm"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+            </label>
+            <div class="status">
+              Mật khẩu tối thiểu 8 ký tự, có chữ hoa, chữ thường và chữ số.
+            </div>
+            <div class="auth-message" id="registerMessage"></div>
+            <button
+              class="btn primary auth-submit"
+              id="registerButton"
+              type="submit"
+            >
+              Gửi yêu cầu đăng ký
+            </button>
+          </form>
+          <div class="status" style="margin-top: 14px; text-align: center">
+            Yêu cầu đăng ký sẽ được gửi tự động đến hệ thống của quản trị viên.
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="app hidden" id="dashboardApp">
+      <header class="top">
+        <div class="brand">
+          <h1>
+            TRUNG TÂM ĐIỀU HÀNH TIẾN ĐỘ<br />
+            ỦY BAN MTTQ PHƯỜNG HÒA BÌNH
+          </h1>
+          <p>
+            Báo cáo công việc hằng ngày ·
+            <span class="live"
+              ><span class="dot"></span
+              ><span id="syncText">Đang xác thực...</span></span
+            >
+          </p>
+        </div>
+
+        <div class="actions">
+          <div class="user-chip">
+            <span class="user-avatar" id="userAvatar">U</span>
+            <span class="user-meta"
+              ><b id="userFullName">Người dùng</b
+              ><small id="userRole">Chỉ xem</small></span
+            >
+          </div>
+          <button class="btn admin-only" id="adminButton" type="button">
+            Quản lý tài khoản
+          </button>
+          <button
+            class="btn primary admin-only"
+            id="addTaskButton"
+            type="button"
+          >
+            ＋ Thêm công việc
+          </button>
+          <button class="btn" id="changePasswordButton" type="button">
+            Đổi mật khẩu
+          </button>
+          <button class="btn" id="logoutButton" type="button">Đăng xuất</button>
+        </div>
+      </header>
+
+      <div class="viewer-notice hidden" id="viewerNotice">
+        <b>Chế độ chỉ xem:</b> tài khoản của bạn được phép theo dõi số liệu và
+        danh sách công việc, nhưng không thể thêm, sửa hoặc xóa dữ liệu.
+      </div>
+
+      <section class="grid kpis">
+        <div class="card kpi">
+          <span class="label">TỔNG CÔNG VIỆC</span><strong id="kTotal">0</strong
+          ><small>Trong hệ thống</small>
+        </div>
+        <div class="card kpi">
+          <span class="label">ĐÃ HOÀN THÀNH</span><strong id="kDone">0</strong
+          ><small id="doneRate">0% tổng nhiệm vụ</small>
+        </div>
+        <div class="card kpi">
+          <span class="label">ĐANG THỰC HIỆN</span><strong id="kDoing">0</strong
+          ><small>Đang được xử lý</small>
+        </div>
+        <div class="card kpi">
+          <span class="label">QUÁ HẠN</span
+          ><strong id="kLate" style="color: var(--red)">0</strong
+          ><small>Cần ưu tiên</small>
+        </div>
+      </section>
+
+      <section class="grid main">
+        <div class="card">
+          <div class="title">
+            <h2>TIẾN ĐỘ 7 NGÀY GẦN NHẤT</h2>
+            <span class="status">Số việc hoàn thành</span>
+          </div>
+          <div class="bars" id="bars"></div>
+        </div>
+        <div class="card">
+          <div class="title"><h2>TỶ LỆ HOÀN THÀNH</h2></div>
+          <div class="ring" id="ring"><b id="ringText">0%</b></div>
+        </div>
+        <div class="card">
+          <div class="title"><h2>HOẠT ĐỘNG TRỰC TIẾP</h2></div>
+          <ul class="activity" id="activity"></ul>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 14px">
+        <div class="title">
+          <h2>CÔNG VIỆC HẰNG NGÀY</h2>
+          <span class="status" id="lastSync"></span>
+        </div>
+        <div class="toolbar">
+          <input
+            id="searchInput"
+            class="field search"
+            placeholder="Tìm công việc, người phụ trách..."
+          />
+          <select id="filterSelect" class="field">
+            <option value="">Tất cả trạng thái</option>
+            <option>Chưa thực hiện</option>
+            <option>Đang thực hiện</option>
+            <option>Hoàn thành</option>
+            <option>Quá hạn</option>
+          </select>
+          <button class="btn" id="syncButton" type="button">↻ Đồng bộ</button>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Công việc</th>
+                <th>Phụ trách</th>
+                <th>Hạn xử lý</th>
+                <th>Ưu tiên</th>
+                <th>Trạng thái</th>
+                <th>Tiến độ</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="taskRows"></tbody>
+          </table>
+        </div>
+      </section>
+      <div class="footer">
+        MẶT TRẬN SỐ · PHỤ TRÁCH KỸ THUẬT: NGUYỄN TUẤN BẮC SĐT: 0986.101.092
+      </div>
+
+      <div class="modal" id="taskModal">
+        <div class="dialog">
+          <h2 id="taskTitle">Thêm công việc</h2>
+          <form class="form" id="taskForm">
+            <input type="hidden" id="taskId" />
+            <label class="wide"
+              >Tên công việc<input required class="field" id="taskName"
+            /></label>
+            <label
+              >Người phụ trách<input required class="field" id="taskOwner"
+            /></label>
+            <label
+              >Hạn xử lý<input required type="date" class="field" id="taskDue"
+            /></label>
+            <label
+              >Ưu tiên<select class="field" id="taskPriority">
+                <option>Cao</option>
+                <option selected>Trung bình</option>
+                <option>Thấp</option>
+              </select></label
+            >
+            <label
+              >Trạng thái<select class="field" id="taskState">
+                <option>Chưa thực hiện</option>
+                <option>Đang thực hiện</option>
+                <option>Hoàn thành</option>
+                <option>Quá hạn</option>
+              </select></label
+            >
+            <label class="wide"
+              >Tiến độ: <span id="progressValue">0</span>%<input
+                id="taskProgress"
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                style="width: 100%"
+            /></label>
+            <div class="wide actions" style="justify-content: flex-end">
+              <button type="button" class="btn" data-close="taskModal">
+                Hủy
+              </button>
+              <button class="btn primary" id="saveTaskButton" type="submit">
+                Lưu công việc
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="adminModal">
+      <div class="dialog large">
+        <div class="title">
+          <div>
+            <h2>QUẢN TRỊ TÀI KHOẢN</h2>
+            <div class="status">
+              Duyệt đăng ký, khóa tài khoản, cấp lại mật khẩu tạm thời và kiểm
+              tra nhật ký thao tác.
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="refreshAdminButton" type="button">
+              ↻ Làm mới</button
+            ><button class="btn" type="button" data-close="adminModal">
+              Đóng
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-summary">
+          <div class="mini-card">
+            <span>Tổng tài khoản</span><strong id="adminTotalUsers">0</strong>
+          </div>
+          <div class="mini-card">
+            <span>Chờ duyệt</span
+            ><strong id="adminPendingUsers" style="color: var(--amber)"
+              >0</strong
+            >
+          </div>
+          <div class="mini-card">
+            <span>Đang hoạt động</span
+            ><strong id="adminActiveUsers" style="color: var(--lime)">0</strong>
+          </div>
+          <div class="mini-card">
+            <span>Đã khóa / từ chối</span
+            ><strong id="adminBlockedUsers" style="color: var(--red)">0</strong>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h3>DANH SÁCH TÀI KHOẢN</h3>
+          <span class="status" id="userListStatus"></span>
+        </div>
+        <div class="tablewrap">
+          <table style="min-width: 980px">
+            <thead>
+              <tr>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Đăng ký</th>
+                <th>Đăng nhập gần nhất</th>
+                <th>Xử lý</th>
+              </tr>
+            </thead>
+            <tbody id="userRows"></tbody>
+          </table>
+        </div>
+
+        <div class="section-head">
+          <h3>NHẬT KÝ GẦN NHẤT</h3>
+          <span class="status">Tối đa 50 bản ghi</span>
+        </div>
+        <div class="audit-list" id="auditList"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="passwordModal">
+      <div class="dialog">
+        <h2>Đổi mật khẩu</h2>
+        <form class="form" id="passwordForm">
+          <label class="wide"
+            >Mật khẩu hiện tại<input
+              class="field"
+              id="currentPassword"
+              type="password"
+              required
+          /></label>
+          <label class="wide"
+            >Mật khẩu mới<input
+              class="field"
+              id="newPassword"
+              type="password"
+              minlength="8"
+              required
+          /></label>
+          <label class="wide"
+            >Nhập lại mật khẩu mới<input
+              class="field"
+              id="confirmNewPassword"
+              type="password"
+              minlength="8"
+              required
+          /></label>
+          <div class="wide status">
+            Mật khẩu mới phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường và số.
+          </div>
+          <div class="wide actions" style="justify-content: flex-end">
+            <button class="btn" type="button" data-close="passwordModal">
+              Hủy
+            </button>
+            <button class="btn primary" id="savePasswordButton" type="submit">
+              Cập nhật mật khẩu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="resetPasswordResultModal">
+      <div class="dialog">
+        <h2>Cấp lại mật khẩu thành công</h2>
+        <p class="status">
+          Mật khẩu tạm thời chỉ hiển thị trong lần này. Hãy chuyển riêng cho
+          người dùng và yêu cầu họ đổi mật khẩu ngay sau khi đăng nhập.
+        </p>
+        <label>
+          Tài khoản
+          <input
+            class="field"
+            id="resetPasswordEmail"
+            readonly
+            style="width: 100%; margin: 8px 0 14px"
+          />
+        </label>
+        <label>
+          Mật khẩu tạm thời
+          <input
+            class="field"
+            id="temporaryPassword"
+            readonly
+            style="
+              width: 100%;
+              margin: 8px 0 14px;
+              font-size: 18px;
+              font-weight: 800;
+              letter-spacing: 1px;
+            "
+          />
+        </label>
+        <div class="actions" style="justify-content: flex-end">
+          <button class="btn" id="copyTemporaryPasswordButton" type="button">
+            Sao chép mật khẩu
+          </button>
+          <button
+            class="btn primary"
+            type="button"
+            data-close="resetPasswordResultModal"
+          >
+            Đã lưu an toàn
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      const TASK_CACHE_KEY = "bobim_tasks_v4";
+      // URL Web App cố định của hệ thống quản trị.
+      // Thay đúng URL /exec của admin vào dòng dưới đây trước khi phát hành file.
+      const ADMIN_API_URL =
+        "https://script.google.com/macros/s/AKfycbx1_Kab5eu9eKuYPXfT50NpnSIKJcbK2qOfnPvl4bh4F0Bqx2dE6ajqSlcMK3A3mKsY/exec";
+      const TOKEN_KEY = "bobim_auth_token_v1";
+      const AUTH_ERROR_CODES = new Set([
+        "AUTH_REQUIRED",
+        "SESSION_INVALID",
+        "SESSION_EXPIRED",
+        "ACCOUNT_DISABLED",
+        "USER_NOT_FOUND",
+      ]);
+
+      const state = {
+        tasks: safeJsonParse(localStorage.getItem(TASK_CACHE_KEY), []),
+        token: localStorage.getItem(TOKEN_KEY) || "",
+        user: null,
+        users: [],
+        audit: [],
+        syncTimer: null,
+      };
+
+      const el = {
+        authGate: document.getElementById("authGate"),
+        dashboardApp: document.getElementById("dashboardApp"),
+        loginTab: document.getElementById("loginTab"),
+        registerTab: document.getElementById("registerTab"),
+        loginForm: document.getElementById("loginForm"),
+        registerForm: document.getElementById("registerForm"),
+        loginEmail: document.getElementById("loginEmail"),
+        loginPassword: document.getElementById("loginPassword"),
+        loginButton: document.getElementById("loginButton"),
+        loginMessage: document.getElementById("loginMessage"),
+        registerName: document.getElementById("registerName"),
+        registerEmail: document.getElementById("registerEmail"),
+        registerPassword: document.getElementById("registerPassword"),
+        registerConfirm: document.getElementById("registerConfirm"),
+        registerButton: document.getElementById("registerButton"),
+        registerMessage: document.getElementById("registerMessage"),
+        syncText: document.getElementById("syncText"),
+        lastSync: document.getElementById("lastSync"),
+        userAvatar: document.getElementById("userAvatar"),
+        userFullName: document.getElementById("userFullName"),
+        userRole: document.getElementById("userRole"),
+        viewerNotice: document.getElementById("viewerNotice"),
+        adminButton: document.getElementById("adminButton"),
+        addTaskButton: document.getElementById("addTaskButton"),
+        changePasswordButton: document.getElementById("changePasswordButton"),
+        logoutButton: document.getElementById("logoutButton"),
+        searchInput: document.getElementById("searchInput"),
+        filterSelect: document.getElementById("filterSelect"),
+        syncButton: document.getElementById("syncButton"),
+        taskRows: document.getElementById("taskRows"),
+        kTotal: document.getElementById("kTotal"),
+        kDone: document.getElementById("kDone"),
+        kDoing: document.getElementById("kDoing"),
+        kLate: document.getElementById("kLate"),
+        doneRate: document.getElementById("doneRate"),
+        ring: document.getElementById("ring"),
+        ringText: document.getElementById("ringText"),
+        bars: document.getElementById("bars"),
+        activity: document.getElementById("activity"),
+        taskModal: document.getElementById("taskModal"),
+        taskForm: document.getElementById("taskForm"),
+        taskTitle: document.getElementById("taskTitle"),
+        taskId: document.getElementById("taskId"),
+        taskName: document.getElementById("taskName"),
+        taskOwner: document.getElementById("taskOwner"),
+        taskDue: document.getElementById("taskDue"),
+        taskPriority: document.getElementById("taskPriority"),
+        taskState: document.getElementById("taskState"),
+        taskProgress: document.getElementById("taskProgress"),
+        progressValue: document.getElementById("progressValue"),
+        saveTaskButton: document.getElementById("saveTaskButton"),
+        adminModal: document.getElementById("adminModal"),
+        refreshAdminButton: document.getElementById("refreshAdminButton"),
+        userRows: document.getElementById("userRows"),
+        auditList: document.getElementById("auditList"),
+        adminTotalUsers: document.getElementById("adminTotalUsers"),
+        adminPendingUsers: document.getElementById("adminPendingUsers"),
+        adminActiveUsers: document.getElementById("adminActiveUsers"),
+        adminBlockedUsers: document.getElementById("adminBlockedUsers"),
+        userListStatus: document.getElementById("userListStatus"),
+        passwordModal: document.getElementById("passwordModal"),
+        passwordForm: document.getElementById("passwordForm"),
+        currentPassword: document.getElementById("currentPassword"),
+        newPassword: document.getElementById("newPassword"),
+        confirmNewPassword: document.getElementById("confirmNewPassword"),
+        savePasswordButton: document.getElementById("savePasswordButton"),
+        resetPasswordResultModal: document.getElementById(
+          "resetPasswordResultModal",
+        ),
+        resetPasswordEmail: document.getElementById("resetPasswordEmail"),
+        temporaryPassword: document.getElementById("temporaryPassword"),
+        copyTemporaryPasswordButton: document.getElementById(
+          "copyTemporaryPasswordButton",
+        ),
+      };
+
+      function safeJsonParse(value, fallback) {
+        try {
+          const parsed = JSON.parse(value || "null");
+          return parsed == null ? fallback : parsed;
+        } catch (_) {
+          return fallback;
+        }
+      }
+
+      function esc(value) {
+        return String(value ?? "").replace(
+          /[&<>"']/g,
+          (char) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[char],
+        );
+      }
+
+      function formatDateTime(value) {
+        if (!value) return "—";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return esc(value);
+        return date.toLocaleString("vi-VN");
+      }
+
+      function isWebAppUrl(url) {
+        return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/i.test(
+          String(url || "").trim(),
+        );
+      }
+
+      function buildApiUrl(baseUrl, params = {}) {
+        const url = new URL(baseUrl);
+        Object.entries(params).forEach(([key, value]) =>
+          url.searchParams.set(key, value),
+        );
+        return url.toString();
+      }
+
+      function getApiUrl() {
+        return String(ADMIN_API_URL || "").trim();
+      }
+
+      function isAdmin() {
+        return state.user && state.user.role === "admin";
+      }
+
+      function setBusy(button, busy, busyText) {
+        if (!button) return;
+        if (busy) {
+          button.dataset.originalText = button.textContent;
+          button.textContent = busyText || "Đang xử lý...";
+          button.disabled = true;
+        } else {
+          button.textContent =
+            button.dataset.originalText || button.textContent;
+          button.disabled = false;
+        }
+      }
+
+      function showMessage(target, message, type) {
+        target.textContent = message || "";
+        target.className =
+          "auth-message" + (message ? " show " + (type || "error") : "");
+      }
+
+      async function apiRequest(action, payload = {}, options = {}) {
+        const url = getApiUrl();
+        if (!isWebAppUrl(url)) {
+          const error = new Error(
+            "Hệ thống chưa được quản trị viên cấu hình URL Web App /exec hợp lệ.",
+          );
+          error.code = "API_URL_MISSING";
+          throw error;
+        }
+
+        const body = { action, ...payload };
+        if (options.auth !== false && state.token) body.token = state.token;
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(body),
+          redirect: "follow",
+          cache: "no-store",
+        });
+
+        const raw = await response.text();
+        if (!response.ok)
+          throw new Error(`HTTP ${response.status}: ${raw.slice(0, 180)}`);
+
+        let result;
+        try {
+          result = JSON.parse(raw);
+        } catch (_) {
+          throw new Error(
+            "Web App không trả về JSON hợp lệ. Hãy triển khai lại Code_RBAC_PRO_v2_RESET.gs bằng phiên bản mới.",
+          );
+        }
+
+        if (!result || result.ok !== true) {
+          const error = new Error(result?.error || "Yêu cầu bị từ chối.");
+          error.code = result?.code || "API_ERROR";
+          if (
+            AUTH_ERROR_CODES.has(error.code) &&
+            options.handleAuth !== false
+          ) {
+            clearSession(false);
+            showLogin(error.message);
+          }
+          throw error;
+        }
+
+        return result;
+      }
+
+      async function testApiConnection(url) {
+        const response = await fetch(
+          buildApiUrl(url, { action: "ping", t: Date.now() }),
+          {
+            method: "GET",
+            cache: "no-store",
+            redirect: "follow",
+          },
+        );
+        const raw = await response.text();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = JSON.parse(raw);
+        if (!result.ok)
+          throw new Error(result.error || "Không thể kết nối Web App.");
+        return result;
+      }
+
+      function switchAuthTab(mode) {
+        const login = mode === "login";
+        el.loginTab.classList.toggle("active", login);
+        el.registerTab.classList.toggle("active", !login);
+        el.loginForm.classList.toggle("hidden", !login);
+        el.registerForm.classList.toggle("hidden", login);
+        showMessage(el.loginMessage, "");
+        showMessage(el.registerMessage, "");
+      }
+
+      function showLogin(message = "") {
+        el.dashboardApp.classList.add("hidden");
+        el.authGate.classList.remove("hidden");
+        switchAuthTab("login");
+        if (message) showMessage(el.loginMessage, message, "error");
+      }
+
+      function enterDashboard(user) {
+        state.user = user;
+        el.authGate.classList.add("hidden");
+        el.dashboardApp.classList.remove("hidden");
+        updatePermissionUi();
+        render();
+        startAutoSync();
+      }
+
+      function clearSession(callServer = true) {
+        const token = state.token;
+        state.token = "";
+        state.user = null;
+        localStorage.removeItem(TOKEN_KEY);
+        if (state.syncTimer) clearInterval(state.syncTimer);
+        state.syncTimer = null;
+        if (callServer && token) {
+          apiRequest(
+            "logout",
+            { token },
+            { auth: false, handleAuth: false },
+          ).catch(() => {});
+        }
+      }
+
+      function updatePermissionUi() {
+        const admin = isAdmin();
+        document
+          .querySelectorAll(".admin-only")
+          .forEach((node) => node.classList.toggle("hidden", !admin));
+        el.viewerNotice.classList.toggle("hidden", admin);
+        el.userFullName.textContent =
+          state.user?.fullName || state.user?.email || "Người dùng";
+        el.userRole.textContent = admin
+          ? "Quản trị viên · toàn quyền"
+          : "Người dùng · chỉ xem";
+        el.userAvatar.textContent = String(
+          state.user?.fullName || state.user?.email || "U",
+        )
+          .trim()
+          .charAt(0)
+          .toUpperCase();
+      }
+
+      async function restoreSession() {
+        if (!state.token) {
+          showLogin();
+          return;
+        }
+
+        try {
+          const result = await apiRequest("session", {}, { handleAuth: false });
+          enterDashboard(result.user);
+          await loadRemote(true);
+        } catch (error) {
+          clearSession(false);
+          showLogin(error.message || "Phiên đăng nhập không còn hiệu lực.");
+        }
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+        showMessage(el.loginMessage, "");
+        setBusy(el.loginButton, true, "Đang đăng nhập...");
+
+        try {
+          const result = await apiRequest(
+            "login",
+            {
+              email: el.loginEmail.value.trim(),
+              password: el.loginPassword.value,
+            },
+            { auth: false, handleAuth: false },
+          );
+
+          state.token = result.token;
+          localStorage.setItem(TOKEN_KEY, result.token);
+          el.loginPassword.value = "";
+          enterDashboard(result.user);
+          await loadRemote(true);
+        } catch (error) {
+          showMessage(el.loginMessage, error.message, "error");
+        } finally {
+          setBusy(el.loginButton, false);
+        }
+      }
+
+      async function handleRegister(event) {
+        event.preventDefault();
+        showMessage(el.registerMessage, "");
+
+        if (el.registerPassword.value !== el.registerConfirm.value) {
+          showMessage(
+            el.registerMessage,
+            "Mật khẩu nhập lại chưa khớp.",
+            "error",
+          );
+          return;
+        }
+
+        setBusy(el.registerButton, true, "Đang gửi đăng ký...");
+        try {
+          const result = await apiRequest(
+            "register",
+            {
+              fullName: el.registerName.value.trim(),
+              email: el.registerEmail.value.trim(),
+              password: el.registerPassword.value,
+            },
+            { auth: false, handleAuth: false },
+          );
+
+          showMessage(el.registerMessage, result.message, "success");
+          el.registerPassword.value = "";
+          el.registerConfirm.value = "";
+        } catch (error) {
+          showMessage(el.registerMessage, error.message, "error");
+        } finally {
+          setBusy(el.registerButton, false);
+        }
+      }
+
+      function render() {
+        const query = el.searchInput.value.toLowerCase().trim();
+        const filter = el.filterSelect.value;
+        const list = state.tasks.filter((task) => {
+          const matchesState = !filter || task.state === filter;
+          const text = `${task.name || ""} ${task.owner || ""}`.toLowerCase();
+          return matchesState && (!query || text.includes(query));
+        });
+
+        el.taskRows.innerHTML = list.length
+          ? list
+              .map((task) => {
+                const encodedId = encodeURIComponent(String(task.id));
+                const actions = isAdmin()
+                  ? `<div class="actions"><button class="btn small" onclick="editTask(decodeURIComponent('${encodedId}'))">Sửa</button><button class="btn danger small" onclick="deleteTask(decodeURIComponent('${encodedId}'))">Xóa</button></div>`
+                  : `<span class="readonly-tag">Chỉ xem</span>`;
+                return `<tr>
+                <td><b>${esc(task.name)}</b></td>
+                <td>${esc(task.owner)}</td>
+                <td>${esc(task.due)}</td>
+                <td>${esc(task.priority)}</td>
+                <td><span class="pill ${task.state === "Hoàn thành" ? "done" : task.state === "Quá hạn" ? "late" : ""}">${esc(task.state)}</span></td>
+                <td><div class="progress"><i style="width:${Number(task.progress) || 0}%"></i></div><small>${Number(task.progress) || 0}%</small></td>
+                <td>${actions}</td>
+              </tr>`;
+              })
+              .join("")
+          : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">Không có dữ liệu phù hợp</td></tr>';
+
+        const done = state.tasks.filter(
+          (task) =>
+            task.state === "Hoàn thành" || Number(task.progress) === 100,
+        ).length;
+        const doing = state.tasks.filter(
+          (task) => task.state === "Đang thực hiện",
+        ).length;
+        const today = new Date().toISOString().slice(0, 10);
+        const late = state.tasks.filter(
+          (task) =>
+            task.state === "Quá hạn" ||
+            (task.due && task.due < today && task.state !== "Hoàn thành"),
+        ).length;
+        const rate = state.tasks.length
+          ? Math.round((done / state.tasks.length) * 100)
+          : 0;
+
+        el.kTotal.textContent = state.tasks.length;
+        el.kDone.textContent = done;
+        el.kDoing.textContent = doing;
+        el.kLate.textContent = late;
+        el.doneRate.textContent = rate + "% tổng nhiệm vụ";
+        el.ring.style.setProperty("--p", rate + "%");
+        el.ringText.textContent = rate + "%";
+
+        renderBars();
+        el.activity.innerHTML =
+          [...state.tasks]
+            .sort((a, b) => String(b.updated).localeCompare(String(a.updated)))
+            .slice(0, 5)
+            .map(
+              (task) =>
+                `<li><b>${esc(task.owner)}</b>${esc(task.name)} · ${Number(task.progress) || 0}%</li>`,
+            )
+            .join("") ||
+          '<li style="border-left-color:var(--line)">Chưa có hoạt động</li>';
+      }
+
+      function renderBars() {
+        const labels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+        const values = labels.map(
+          (_, index) =>
+            state.tasks.filter(
+              (task, taskIndex) =>
+                (taskIndex + index) % 4 === 0 && Number(task.progress) >= 50,
+            ).length,
+        );
+        const max = Math.max(1, ...values);
+        el.bars.innerHTML = labels
+          .map(
+            (label, index) =>
+              `<div class="baritem"><div class="bar" style="height:${25 + (values[index] / max) * 145}px"></div>${label}</div>`,
+          )
+          .join("");
+      }
+
+      async function loadRemote(silent = false) {
+        if (!state.user) return;
+        el.syncText.textContent = "Đang đồng bộ...";
+        try {
+          const result = await apiRequest("list");
+          state.tasks = Array.isArray(result.data)
+            ? result.data
+                .map((task, index) => ({
+                  id: String(task.id || index + 1),
+                  name: String(task.name || task.congViec || "").trim(),
+                  owner: String(task.owner || task.phuTrach || "").trim(),
+                  due: String(task.due || task.hanXuLy || "").slice(0, 10),
+                  priority: task.priority || task.uuTien || "Trung bình",
+                  state: task.state || task.trangThai || "Chưa thực hiện",
+                  progress: Number(task.progress ?? task.tienDo ?? 0) || 0,
+                  updated: task.updated || new Date().toISOString(),
+                }))
+                .filter((task) => task.name)
+            : [];
+          localStorage.setItem(TASK_CACHE_KEY, JSON.stringify(state.tasks));
+          render();
+          el.syncText.textContent = isAdmin()
+            ? "Đã kết nối · quyền quản trị"
+            : "Đã kết nối · chế độ chỉ xem";
+          el.lastSync.textContent =
+            "Cập nhật " + new Date().toLocaleTimeString("vi-VN");
+        } catch (error) {
+          el.syncText.textContent = "Lỗi đồng bộ · đang dùng dữ liệu cục bộ";
+          el.lastSync.textContent = "Lỗi: " + error.message;
+          if (!silent && !AUTH_ERROR_CODES.has(error.code))
+            alert("Không cập nhật được dữ liệu.\n\n" + error.message);
+        }
+      }
+
+      function openTask() {
+        if (!isAdmin()) {
+          alert("Tài khoản của bạn chỉ có quyền xem.");
+          return;
+        }
+        el.taskTitle.textContent = "Thêm công việc";
+        el.taskId.value = "";
+        el.taskName.value = "";
+        el.taskOwner.value = "";
+        el.taskDue.value = new Date().toISOString().slice(0, 10);
+        el.taskPriority.value = "Trung bình";
+        el.taskState.value = "Chưa thực hiện";
+        el.taskProgress.value = 0;
+        el.progressValue.textContent = 0;
+        openModal("taskModal");
+        setTimeout(() => el.taskName.focus(), 0);
+      }
+
+      window.editTask = function editTask(id) {
+        if (!isAdmin()) return;
+        const task = state.tasks.find((item) => String(item.id) === String(id));
+        if (!task) return;
+        el.taskTitle.textContent = "Cập nhật công việc";
+        el.taskId.value = task.id || "";
+        el.taskName.value = task.name || "";
+        el.taskOwner.value = task.owner || "";
+        el.taskDue.value = String(task.due || "").slice(0, 10);
+        el.taskPriority.value = task.priority || "Trung bình";
+        el.taskState.value = task.state || "Chưa thực hiện";
+        el.taskProgress.value = Number(task.progress) || 0;
+        el.progressValue.textContent = Number(task.progress) || 0;
+        openModal("taskModal");
+      };
+
+      async function saveTask(event) {
+        event.preventDefault();
+        if (!isAdmin()) return;
+
+        const task = {
+          id: String(el.taskId.value || Date.now()),
+          name: el.taskName.value.trim(),
+          owner: el.taskOwner.value.trim(),
+          due: el.taskDue.value,
+          priority: el.taskPriority.value,
+          state: el.taskState.value,
+          progress: Number(el.taskProgress.value) || 0,
+          updated: new Date().toISOString(),
+        };
+
+        if (!task.name || !task.owner || !task.due) {
+          alert(
+            "Vui lòng nhập đầy đủ Tên công việc, Người phụ trách và Hạn xử lý.",
+          );
+          return;
+        }
+        if (task.progress === 100) task.state = "Hoàn thành";
+
+        setBusy(el.saveTaskButton, true, "Đang lưu...");
+        try {
+          await apiRequest("upsert", { data: task });
+          closeModal("taskModal");
+          await loadRemote(true);
+          el.syncText.textContent = "Đã cập nhật Google Sheets";
+        } catch (error) {
+          if (!AUTH_ERROR_CODES.has(error.code))
+            alert("Không thể lưu công việc.\n\n" + error.message);
+        } finally {
+          setBusy(el.saveTaskButton, false);
+        }
+      }
+
+      window.deleteTask = async function deleteTask(id) {
+        if (!isAdmin()) return;
+        const task = state.tasks.find((item) => String(item.id) === String(id));
+        const label = task?.name || "công việc này";
+        if (
+          !confirm(
+            `Xóa “${label}”? Thao tác sẽ xóa dòng tương ứng khỏi Google Sheets.`,
+          )
+        )
+          return;
+
+        try {
+          await apiRequest("deleteTask", { id });
+          await loadRemote(true);
+        } catch (error) {
+          if (!AUTH_ERROR_CODES.has(error.code))
+            alert("Không thể xóa công việc.\n\n" + error.message);
+        }
+      };
+
+      function openModal(id) {
+        document.getElementById(id)?.classList.add("open");
+      }
+
+      function closeModal(id) {
+        document.getElementById(id)?.classList.remove("open");
+      }
+
+      async function openAdminPanel() {
+        if (!isAdmin()) return;
+        openModal("adminModal");
+        await refreshAdminPanel();
+      }
+
+      async function refreshAdminPanel() {
+        if (!isAdmin()) return;
+        el.userListStatus.textContent = "Đang tải...";
+        try {
+          const [usersResult, auditResult] = await Promise.all([
+            apiRequest("listUsers"),
+            apiRequest("listAudit", { limit: 50 }),
+          ]);
+          state.users = usersResult.data || [];
+          state.audit = auditResult.data || [];
+          renderUsers();
+          renderAudit();
+          el.userListStatus.textContent =
+            "Cập nhật " + new Date().toLocaleTimeString("vi-VN");
+        } catch (error) {
+          el.userListStatus.textContent = "Lỗi: " + error.message;
+        }
+      }
+
+      function renderUsers() {
+        const users = state.users;
+        el.adminTotalUsers.textContent = users.length;
+        el.adminPendingUsers.textContent = users.filter(
+          (user) => user.status === "pending",
+        ).length;
+        el.adminActiveUsers.textContent = users.filter(
+          (user) => user.status === "active",
+        ).length;
+        el.adminBlockedUsers.textContent = users.filter(
+          (user) => user.status === "disabled" || user.status === "rejected",
+        ).length;
+
+        el.userRows.innerHTML = users.length
+          ? users
+              .map((user) => {
+                let buttons = "";
+                const encodedId = encodeURIComponent(user.id);
+                const encodedEmail = encodeURIComponent(user.email);
+                const resetButton = `<button class="btn small" onclick="adminResetPassword(decodeURIComponent('${encodedId}'),decodeURIComponent('${encodedEmail}'))">Cấp lại MK</button>`;
+
+                if (user.id === state.user.id) {
+                  buttons =
+                    '<span class="readonly-tag">Tài khoản hiện tại</span>';
+                } else if (user.status === "pending") {
+                  buttons = `<div class="actions"><button class="btn success small" onclick="setUserStatus(decodeURIComponent('${encodedId}'),'active')">Duyệt</button><button class="btn danger small" onclick="setUserStatus(decodeURIComponent('${encodedId}'),'rejected')">Từ chối</button></div>`;
+                } else if (user.status === "active") {
+                  buttons = `<div class="actions"><button class="btn danger small" onclick="setUserStatus(decodeURIComponent('${encodedId}'),'disabled')">Khóa</button>${resetButton}</div>`;
+                } else {
+                  buttons = `<div class="actions"><button class="btn success small" onclick="setUserStatus(decodeURIComponent('${encodedId}'),'active')">Kích hoạt</button>${resetButton}</div>`;
+                }
+
+                return `<tr>
+            <td><b>${esc(user.fullName)}</b></td>
+            <td>${esc(user.email)}</td>
+            <td>${user.role === "admin" ? "Quản trị" : "Chỉ xem"}</td>
+            <td><span class="pill ${esc(user.status)}">${statusLabel(user.status)}</span></td>
+            <td>${formatDateTime(user.createdAt)}</td>
+            <td>${formatDateTime(user.lastLoginAt)}</td>
+            <td>${buttons}</td>
+          </tr>`;
+              })
+              .join("")
+          : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">Chưa có tài khoản</td></tr>';
+      }
+
+      function statusLabel(status) {
+        return (
+          {
+            pending: "Chờ duyệt",
+            active: "Hoạt động",
+            rejected: "Từ chối",
+            disabled: "Đã khóa",
+          }[status] || status
+        );
+      }
+
+      window.setUserStatus = async function setUserStatus(userId, status) {
+        if (!isAdmin()) return;
+        const label =
+          status === "active"
+            ? "kích hoạt"
+            : status === "disabled"
+              ? "khóa"
+              : "từ chối";
+        if (!confirm(`Xác nhận ${label} tài khoản này?`)) return;
+        try {
+          await apiRequest("setUserStatus", { userId, status });
+          await refreshAdminPanel();
+        } catch (error) {
+          if (!AUTH_ERROR_CODES.has(error.code))
+            alert("Không thể cập nhật tài khoản.\n\n" + error.message);
+        }
+      };
+
+      window.adminResetPassword = async function adminResetPassword(
+        userId,
+        email,
+      ) {
+        if (!isAdmin()) return;
+
+        const confirmed = confirm(
+          `Cấp lại mật khẩu cho ${email}?\n\n` +
+            "Mật khẩu cũ sẽ hết hiệu lực và toàn bộ phiên đăng nhập hiện tại của tài khoản này sẽ bị thu hồi.",
+        );
+        if (!confirmed) return;
+
+        try {
+          const result = await apiRequest("adminResetPassword", { userId });
+
+          el.resetPasswordEmail.value = email;
+          el.temporaryPassword.value = result.temporaryPassword || "";
+          openModal("resetPasswordResultModal");
+
+          await refreshAdminPanel();
+        } catch (error) {
+          if (!AUTH_ERROR_CODES.has(error.code)) {
+            alert("Không thể cấp lại mật khẩu.\n\n" + error.message);
+          }
+        }
+      };
+
+      async function copyTemporaryPassword() {
+        const value = el.temporaryPassword.value;
+        if (!value) return;
+
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+          } else {
+            el.temporaryPassword.focus();
+            el.temporaryPassword.select();
+            document.execCommand("copy");
+          }
+
+          const original = el.copyTemporaryPasswordButton.textContent;
+          el.copyTemporaryPasswordButton.textContent = "Đã sao chép";
+          setTimeout(() => {
+            el.copyTemporaryPasswordButton.textContent = original;
+          }, 1600);
+        } catch (_) {
+          el.temporaryPassword.focus();
+          el.temporaryPassword.select();
+          alert(
+            "Trình duyệt không cho sao chép tự động. Mật khẩu đã được bôi chọn để anh sao chép thủ công.",
+          );
+        }
+      }
+
+      function renderAudit() {
+        el.auditList.innerHTML = state.audit.length
+          ? state.audit
+              .map(
+                (item) =>
+                  `<div class="audit-item"><b>${esc(item.action)}</b> · ${esc(item.email || "Hệ thống")}<br /><small>${formatDateTime(item.timestamp)} · Đối tượng: ${esc(item.targetId || "—")}</small><div class="status" style="margin-top:5px">${esc(item.detail || "")}</div></div>`,
+              )
+              .join("")
+          : '<div class="status">Chưa có nhật ký thao tác.</div>';
+      }
+
+      function openPasswordModal() {
+        el.passwordForm.reset();
+        openModal("passwordModal");
+        setTimeout(() => el.currentPassword.focus(), 0);
+      }
+
+      async function changePassword(event) {
+        event.preventDefault();
+        if (el.newPassword.value !== el.confirmNewPassword.value) {
+          alert("Mật khẩu mới nhập lại chưa khớp.");
+          return;
+        }
+        setBusy(el.savePasswordButton, true, "Đang cập nhật...");
+        try {
+          const result = await apiRequest("changePassword", {
+            currentPassword: el.currentPassword.value,
+            newPassword: el.newPassword.value,
+          });
+          closeModal("passwordModal");
+          alert(result.message);
+        } catch (error) {
+          if (!AUTH_ERROR_CODES.has(error.code))
+            alert("Không thể đổi mật khẩu.\n\n" + error.message);
+        } finally {
+          setBusy(el.savePasswordButton, false);
+        }
+      }
+
+      function startAutoSync() {
+        if (state.syncTimer) clearInterval(state.syncTimer);
+        state.syncTimer = setInterval(() => loadRemote(true), 30000);
+      }
+
+      async function logout() {
+        const token = state.token;
+        try {
+          if (token)
+            await apiRequest(
+              "logout",
+              { token },
+              { auth: false, handleAuth: false },
+            );
+        } catch (_) {}
+        clearSession(false);
+        showLogin("Bạn đã đăng xuất khỏi hệ thống.");
+      }
+
+      document.addEventListener("click", (event) => {
+        const closeId = event.target.getAttribute("data-close");
+        if (closeId) closeModal(closeId);
+        if (event.target.classList.contains("modal"))
+          event.target.classList.remove("open");
+      });
+
+      el.loginTab.addEventListener("click", () => switchAuthTab("login"));
+      el.registerTab.addEventListener("click", () => switchAuthTab("register"));
+      el.loginForm.addEventListener("submit", handleLogin);
+      el.registerForm.addEventListener("submit", handleRegister);
+      el.searchInput.addEventListener("input", render);
+      el.filterSelect.addEventListener("change", render);
+      el.syncButton.addEventListener("click", () => loadRemote(false));
+      el.addTaskButton.addEventListener("click", openTask);
+      el.taskForm.addEventListener("submit", saveTask);
+      el.taskProgress.addEventListener("input", () => {
+        el.progressValue.textContent = el.taskProgress.value;
+      });
+      el.adminButton.addEventListener("click", openAdminPanel);
+      el.refreshAdminButton.addEventListener("click", refreshAdminPanel);
+      el.changePasswordButton.addEventListener("click", openPasswordModal);
+      el.passwordForm.addEventListener("submit", changePassword);
+      el.copyTemporaryPasswordButton.addEventListener(
+        "click",
+        copyTemporaryPassword,
+      );
+      el.logoutButton.addEventListener("click", logout);
+
+      render();
+      restoreSession();
+    </script>
+  </body>
+</html>
