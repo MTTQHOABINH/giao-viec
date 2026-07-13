@@ -1555,7 +1555,7 @@
           localStorage.setItem(TASK_CACHE_KEY, JSON.stringify(state.tasks));
           render();
           el.syncText.textContent = isAdmin()
-            ? "Đã kết nối · quyền quản trị"
+            ? "Đã kết nối · tự động cập nhật sau 30 giây"
             : isOperator()
               ? "Đã kết nối · quyền điều hành"
               : "Đã kết nối · chế độ chỉ xem";
