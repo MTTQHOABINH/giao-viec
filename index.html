@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Trung tâm điều hành tiến độ · MTTQ HÒA BÌNH</title>
+    <title>Trung tâm điều hành tiến độ · Phân quyền</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Bi%E1%BB%83u_tr%C6%B0ng_M%E1%BA%B7t_tr%E1%BA%ADn_T%E1%BB%95_qu%E1%BB%91c_Vi%E1%BB%87t_Nam.svg/500px-Bi%E1%BB%83u_tr%C6%B0ng_M%E1%BA%B7t_tr%E1%BA%ADn_T%E1%BB%95_qu%E1%BB%91c_Vi%E1%BB%87t_Nam.svg.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -284,9 +284,18 @@
 
       .baritem {
         flex: 1;
+        min-width: 0;
         text-align: center;
         color: var(--muted);
         font-size: 11px;
+      }
+
+      .barvalue {
+        min-height: 18px;
+        margin-bottom: 4px;
+        color: var(--text);
+        font-size: 11px;
+        font-weight: 750;
       }
 
       .bar {
@@ -295,6 +304,26 @@
         min-height: 5px;
         margin-bottom: 7px;
         box-shadow: 0 0 18px #20d9e833;
+        transition: height 0.25s ease;
+      }
+
+      .barlabel {
+        display: block;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .bardate {
+        display: block;
+        margin-top: 2px;
+        color: #65879a;
+        font-size: 10px;
+        white-space: nowrap;
+      }
+
+      .baritem.today .barlabel,
+      .baritem.today .bardate {
+        color: var(--lime);
       }
 
       .ring {
@@ -825,7 +854,7 @@
         <section class="auth-hero">
           <div>
             <div class="auth-mark"><span class="dot"></span> Hệ thống được bảo vệ</div>
-            <h1>TRUNG TÂM<br />ĐIỀU HÀNH TIẾN ĐỘ<br /> Ủy ban Mặt trận Tổ quốc Việt Nam phường Hòa Bình </h1>
+            <h1>TRUNG TÂM<br />ĐIỀU HÀNH TIẾN ĐỘ</h1>
             <p>
               Quản trị viên được toàn quyền xử lý dữ liệu. Tài khoản người dùng phải đăng ký trực tiếp vào hệ thống của quản trị viên, chờ phê duyệt và chỉ được truy cập ở chế độ xem.
             </p>
@@ -917,7 +946,7 @@
 
       <section class="grid main">
         <div class="card">
-          <div class="title"><h2>TIẾN ĐỘ 7 NGÀY GẦN NHẤT</h2><span class="status">Số việc hoàn thành</span></div>
+          <div class="title"><h2>TIẾN ĐỘ 7 NGÀY GẦN NHẤT</h2><span class="status">Tiến độ trung bình theo ngày cập nhật</span></div>
           <div class="bars" id="bars"></div>
         </div>
         <div class="card">
@@ -961,7 +990,7 @@
         </div>
       </section>
 
-      <div class="footer">MẶT TRẬN SỐ · HỖ TRỢ KỸ THUẬT: Đ/c Bắc - 0986.101.092</div>
+      <div class="footer">MẶT TRẬN SỐ · HỆ THỐNG ĐIỀU HÀNH CÓ PHÂN QUYỀN</div>
     </div>
 
     <div class="modal" id="taskModal">
@@ -1526,11 +1555,126 @@
           .join("") || '<li style="border-left-color:var(--line)">Chưa có hoạt động</li>';
       }
 
+      function vietnamDateParts(date) {
+        const formatter = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Ho_Chi_Minh",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          weekday: "short",
+        });
+
+        const parts = {};
+        formatter.formatToParts(date).forEach((part) => {
+          if (part.type !== "literal") parts[part.type] = part.value;
+        });
+
+        return {
+          key: `${parts.year}-${parts.month}-${parts.day}`,
+          dateLabel: `${parts.day}/${parts.month}`,
+          weekday: ({
+            Mon: "T2",
+            Tue: "T3",
+            Wed: "T4",
+            Thu: "T5",
+            Fri: "T6",
+            Sat: "T7",
+            Sun: "CN",
+          })[parts.weekday] || parts.weekday,
+        };
+      }
+
+      function parseTaskUpdated(value) {
+        if (!value) return null;
+
+        const raw = String(value).trim();
+        let date = new Date(raw);
+
+        if (!Number.isNaN(date.getTime())) return date;
+
+        // Hỗ trợ dữ liệu dạng dd/MM/yyyy HH:mm:ss trong Google Sheets.
+        const match = raw.match(
+          /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/,
+        );
+
+        if (!match) return null;
+
+        const [, day, month, year, hour = "00", minute = "00", second = "00"] =
+          match;
+
+        date = new Date(
+          `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+            2,
+            "0",
+          )}T${String(hour).padStart(2, "0")}:${minute}:${second}+07:00`,
+        );
+
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
       function renderBars() {
-        const labels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-        const values = labels.map((_, index) => state.tasks.filter((task, taskIndex) => (taskIndex + index) % 4 === 0 && Number(task.progress) >= 50).length);
-        const max = Math.max(1, ...values);
-        el.bars.innerHTML = labels.map((label, index) => `<div class="baritem"><div class="bar" style="height:${25 + (values[index] / max) * 145}px"></div>${label}</div>`).join("");
+        const now = new Date();
+        const todayKey = vietnamDateParts(now).key;
+
+        // 7 ngày liên tiếp gần nhất, từ ngày cũ nhất đến ngày hiện tại.
+        const days = Array.from({ length: 7 }, (_, index) => {
+          const date = new Date(now.getTime() - (6 - index) * 86400000);
+          const parts = vietnamDateParts(date);
+
+          return {
+            ...parts,
+            taskCount: 0,
+            completedCount: 0,
+            progressTotal: 0,
+          };
+        });
+
+        const dayMap = new Map(days.map((day) => [day.key, day]));
+
+        state.tasks.forEach((task) => {
+          const updatedDate = parseTaskUpdated(task.updated);
+          if (!updatedDate) return;
+
+          const day = dayMap.get(vietnamDateParts(updatedDate).key);
+          if (!day) return;
+
+          const progress = Math.max(
+            0,
+            Math.min(100, Number(task.progress) || 0),
+          );
+
+          day.taskCount += 1;
+          day.progressTotal += progress;
+
+          if (task.state === "Hoàn thành" || progress === 100) {
+            day.completedCount += 1;
+          }
+        });
+
+        el.bars.innerHTML = days
+          .map((day) => {
+            const average = day.taskCount
+              ? Math.round(day.progressTotal / day.taskCount)
+              : 0;
+
+            // Thang biểu đồ cố định 0–100%, không co giãn theo giá trị lớn nhất.
+            const height = average === 0 ? 5 : 15 + average * 1.45;
+            const tooltip =
+              `${day.weekday} ${day.dateLabel}: ${average}% tiến độ trung bình; ` +
+              `${day.taskCount} công việc được cập nhật; ` +
+              `${day.completedCount} công việc hoàn thành.`;
+
+            return `
+              <div class="baritem ${day.key === todayKey ? "today" : ""}" title="${esc(
+                tooltip,
+              )}">
+                <div class="barvalue">${average}%</div>
+                <div class="bar" style="height:${height}px"></div>
+                <span class="barlabel">${day.weekday}</span>
+                <span class="bardate">${day.dateLabel}</span>
+              </div>`;
+          })
+          .join("");
       }
 
       async function loadRemote(silent = false) {
@@ -1555,7 +1699,7 @@
           localStorage.setItem(TASK_CACHE_KEY, JSON.stringify(state.tasks));
           render();
           el.syncText.textContent = isAdmin()
-            ? "Đã kết nối · tự động cập nhật sau 30 giây"
+            ? "Đã kết nối · quyền quản trị"
             : isOperator()
               ? "Đã kết nối · quyền điều hành"
               : "Đã kết nối · chế độ chỉ xem";
